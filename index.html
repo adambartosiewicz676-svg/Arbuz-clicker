@@ -1,0 +1,181 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arbuz Clicker 🍉</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;text-align:center;color:#fff;background:linear-gradient(135deg,#087f45,#20bd70);padding:16px}
+h1{font-size:32px}
+.panel{background:#ffffff20;border:2px solid #ffffff40;border-radius:20px;padding:16px;margin:14px auto;max-width:480px}
+#arbuz{font-size:110px;border:0;background:none;cursor:pointer;transition:.08s}
+#arbuz:active{transform:scale(.88)}
+button{border:0;border-radius:12px;padding:12px 16px;margin:5px;font-size:16px;font-weight:bold;cursor:pointer;background:#ffe66d;color:#563900}
+button:disabled{opacity:.45;cursor:not-allowed}
+.stat{font-size:21px;margin:8px}
+.small{font-size:13px;opacity:.85}
+input{padding:12px;border-radius:10px;border:0;font-size:16px;width:65%;max-width:230px}
+</style>
+</head>
+<body>
+<h1>🍉 ARBUZ CLICKER 🍉</h1>
+<div class="panel">
+  <div class="stat">💰 Monety: <b id="coins">0</b></div>
+  <div class="stat">🍉 Za kliknięcie: <b id="power">1</b></div>
+  <div class="stat">✨ Mnożnik: ×<b id="mult">1</b></div>
+  <button id="arbuz" onclick="clickWatermelon()">🍉</button>
+  <div class="small">Klikaj arbuza, żeby zdobywać monety!</div>
+</div>
+
+<div class="panel">
+<h2>🏪 SKLEP</h2>
+<p>👆 Mocniejszy palec: <b id="fingerCost">50</b> monet</p>
+<button onclick="buyFinger()">Kup ulepszenie</button>
+<p>🤖 Automat: <b id="autoCost">200</b> monet</p>
+<button onclick="buyAuto()">Kup automat</button>
+<div class="stat">Automaty: <b id="autoCount">0</b></div>
+</div>
+
+<div class="panel">
+<h2>🐶 ZWIERZĄTKA</h2>
+<p>Każde zwierzątko daje +1 do mnożnika!</p>
+<button onclick="buyPet()">Kup zwierzątko – 1 000 monet</button>
+<div class="stat">🐾 Twoje zwierzątka: <b id="pets">0</b></div>
+</div>
+
+<div class="panel">
+<h2>🔄 REBIRTH</h2>
+<p>Rebirth resetuje monety, moc klikania i automaty.</p>
+<p>🐉 Zwierzątka zostają!</p>
+<div class="stat">Aktualny rebirth: <b id="rebirths">0</b>/2</div>
+<div class="stat">Następny koszt: <b id="rebirthCost">100 000</b></div>
+<button id="rebirthButton" onclick="doRebirth()">🔄 Zrób rebirth</button>
+<p class="small">1. Rebirth: 100 000 monet → ×2 zarobków<br>
+2. Rebirth: 400 000 monet → ×3 zarobków</p>
+</div>
+
+<div class="panel">
+<h2>🎁 KODY BONUSOWE</h2>
+<input id="code" placeholder="Wpisz kod">
+<button onclick="useCode()">Użyj kodu</button>
+<p class="small">Dostępne kody: ARBUZ, BANAN, MILION</p>
+</div>
+
+<div class="panel">
+<button onclick="saveGame()">💾 Zapisz grę</button>
+<button onclick="resetGame()">🗑️ Reset gry</button>
+<p class="small" id="message">Miłej zabawy! 🍉</p>
+</div>
+
+<script>
+let coins=0;
+let power=1;
+let auto=0;
+let pets=0;
+let rebirths=0;
+let fingerCost=50;
+let autoCost=200;
+let usedCodes=[];
+let multiplier=1;
+
+function update(){
+  multiplier = (rebirths===0?1:rebirths===1?2:3) + pets;
+  document.getElementById("coins").textContent=Math.floor(coins).toLocaleString("pl-PL");
+  document.getElementById("power").textContent=power;
+  document.getElementById("mult").textContent=multiplier;
+  document.getElementById("autoCount").textContent=auto;
+  document.getElementById("pets").textContent=pets;
+  document.getElementById("rebirths").textContent=rebirths;
+  document.getElementById("fingerCost").textContent=fingerCost.toLocaleString("pl-PL");
+  document.getElementById("autoCost").textContent=autoCost.toLocaleString("pl-PL");
+  document.getElementById("rebirthCost").textContent=rebirths===0?"100 000":rebirths===1?"400 000":"MAX";
+  document.getElementById("rebirthButton").disabled=rebirths>=2 || coins<(rebirths===0?100000:400000);
+}
+
+function clickWatermelon(){
+  coins+=power*multiplier;
+  update();
+}
+function buyFinger(){
+  if(coins<fingerCost)return say("Za mało monet!");
+  coins-=fingerCost;
+  power++;
+  fingerCost=Math.floor(fingerCost*1.8);
+  update();
+  say("Ulepszono palec! 👆");
+}
+function buyAuto(){
+  if(coins<autoCost)return say("Za mało monet!");
+  coins-=autoCost;
+  auto++;
+  autoCost=Math.floor(autoCost*2);
+  update();
+  say("Kupiono automat! 🤖");
+}
+function buyPet(){
+  if(coins<1000)return say("Za mało monet!");
+  coins-=1000;
+  pets++;
+  update();
+  say("Nowe zwierzątko! 🐶");
+}
+function doRebirth(){
+  if(rebirths>=2)return;
+  let cost=rebirths===0?100000:400000;
+  if(coins<cost)return say("Za mało monet!");
+  if(!confirm("Czy na pewno chcesz zrobić rebirth? Monety i ulepszenia zostaną zresetowane!"))return;
+  coins=0;
+  power=1;
+  auto=0;
+  fingerCost=50;
+  autoCost=200;
+  rebirths++;
+  update();
+  saveGame();
+  say("REBIRTH! Twój mnożnik wzrósł! 🎉");
+}
+function useCode(){
+  let c=document.getElementById("code").value.trim().toUpperCase();
+  if(usedCodes.includes(c))return say("Ten kod był już użyty!");
+  let rewards={ARBUZ:5000,BANAN:10000,MILION:1000000};
+  if(!rewards[c])return say("Nieprawidłowy kod!");
+  coins+=rewards[c];
+  usedCodes.push(c);
+  document.getElementById("code").value="";
+  update();
+  saveGame();
+  say("Kod wykorzystany! +" + rewards[c].toLocaleString("pl-PL") + " monet 🎁");
+}
+function say(t){document.getElementById("message").textContent=t}
+function saveGame(){
+  localStorage.setItem("arbuzSave",JSON.stringify({coins,power,auto,pets,rebirths,fingerCost,autoCost,usedCodes}));
+  say("Gra zapisana! 💾");
+}
+function loadGame(){
+  try{
+    let s=JSON.parse(localStorage.getItem("arbuzSave"));
+    if(s){
+      coins=s.coins||0;power=s.power||1;auto=s.auto||0;pets=s.pets||0;
+      rebirths=s.rebirths||0;fingerCost=s.fingerCost||50;autoCost=s.autoCost||200;
+      usedCodes=s.usedCodes||[];
+    }
+  }catch(e){}
+  update();
+}
+function resetGame(){
+  if(!confirm("Na pewno usunąć cały postęp?"))return;
+  localStorage.removeItem("arbuzSave");
+  location.reload();
+}
+setInterval(()=>{
+  coins+=auto*multiplier;
+  update();
+},1000);
+setInterval(saveGame,10000);
+loadGame();
+</script>
+</body>
+  </html>
+  
