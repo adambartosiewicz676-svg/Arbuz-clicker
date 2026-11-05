@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arbuz Clicker 🍉</title>
+<style>
+body{margin:0;background:linear-gradient(160deg,#72efa0,#07934c);font-family:Arial;text-align:center;color:#174b2d;padding:15px}
+h1{color:white;font-size:34px;text-shadow:2px 3px #08783d}
+.panel{background:#fff8df;border-radius:22px;padding:18px;margin:12px auto;max-width:450px;box-shadow:0 6px #08783d}
+#score{font-size:42px;font-weight:bold;color:#078b43}
+#melon{font-size:145px;background:none;border:0;cursor:pointer;touch-action:manipulation}
+button{border:0;border-radius:14px;padding:13px;margin:5px;background:#ffd84d;font-size:17px;font-weight:bold;color:#543900}
+button:active{transform:scale(.94)}
+.tabs button{background:#d8f5df}
+.item{background:white;border-radius:12px;padding:10px;margin:8px}
+input{padding:12px;border-radius:10px;border:2px solid #9bd6a9;width:65%}
+</style>
+</head>
+<body>
+<h1>🍉 ARBUZ CLICKER 🍉</h1>
+<div class="panel">
+<h3>Twoje arbuzy</h3>
+<div id="score">0</div>
+<button id="melon">🍉</button>
+<h3 id="power">+1 za kliknięcie</h3>
+<div>🍉 Na sekundę: <b id="auto">0</b></div>
+</div>
+<div class="panel">
+<div class="tabs">
+<button onclick="tab('shop')">🛒 Sklep</button>
+<button onclick="tab('pets')">🐶 Zwierzaki</button>
+<button onclick="tab('rebirth')">♻️ Rebirth</button>
+<button onclick="tab('codes')">🎁 Kody</button>
+</div>
+<div id="shop">
+<h2>🛒 Sklep</h2>
+<div class="item">👆 Mocny palec<br>Poziom: <b id="cl">0</b><br>Koszt: <b id="cc">25</b><br><button onclick="buyClick()">KUP</button></div>
+<div class="item">🤖 Robot<br>Poziom: <b id="al">0</b><br>Koszt: <b id="ac">60</b><br><button onclick="buyAuto()">KUP</button></div>
+</div>
+<div id="pets" hidden>
+<h2>🐾 Zwierzaki</h2>
+<div class="item">🐶 Piesek — ×1,5 kliknięcia<br><button onclick="pet('dog',250)">KUP 250</button></div>
+<div class="item">🐱 Kotek — ×2 auto<br><button onclick="pet('cat',600)">KUP 600</button></div>
+<div class="item">🐝 Pszczółka — ×2 wszystko<br><button onclick="pet('bee',1800)">KUP 1800</button></div>
+<div id="petlist"></div>
+</div>
+<div id="rebirth" hidden>
+<h2>♻️ Rebirth</h2>
+<p>Wymagane: <b id="rc">1000</b> arbuzów</p>
+<button onclick="rebirth()">ZRÓB REBIRTH!</button>
+<p>Twoje rebirthy: <b id="rb">0</b></p>
+</div>
+<div id="codes" hidden>
+<h2>🎁 Kody</h2>
+<input id="code" placeholder="WPISZ KOD">
+<button onclick="redeem()">ODBierz</button>
+<p id="msg"></p>
+</div>
+</div>
+<script>
+let s=0,cl=0,al=0,rb=0;
+let pets=[],used=[];
+const $=id=>document.getElementById(id);
+function mult(){return 1+rb*.5}
+function clickPower(){return (1+cl*2)*mult()*(pets.includes('dog')?1.5:1)*(pets.includes('bee')?2:1)}
+function autoPower(){return al*mult()*(pets.includes('cat')?2:1)*(pets.includes('bee')?2:1)}
+function update(){
+$('score').textContent=Math.floor(s).toLocaleString('pl-PL');
+$('power').textContent='+'+clickPower()+' za kliknięcie';
+$('auto').textContent=autoPower();
+$('cl').textContent=cl;$('al').textContent=al;
+$('cc').textContent=Math.floor(25*Math.pow(1.65,cl));
+$('ac').textContent=Math.floor(60*Math.pow(1.8,al));
+$('rc').textContent=1000*Math.pow(3,rb);
+$('rb').textContent=rb;
+$('petlist').textContent='Twoje zwierzaki: '+(pets.join(', ')||'brak');
+}
+function tab(t){['shop','pets','rebirth','codes'].forEach(x=>$(x).hidden=x!==t)}
+$('melon').onclick=()=>{s+=clickPower();update()};
+function buyClick(){let c=Math.floor(25*Math.pow(1.65,cl));if(s>=c){s-=c;cl++;update()}}
+function buyAuto(){let c=Math.floor(60*Math.pow(1.8,al));if(s>=c){s-=c;al++;update()}}
+function pet(id,c){if(s>=c&&!pets.includes(id)){s-=c;pets.push(id);update()}}
+function rebirth(){let c=1000*Math.pow(3,rb);if(s>=c){s=0;cl=0;al=0;rb++;update()}}
+function redeem(){
+let code=$('code').value.trim().toUpperCase();
+let rewards={ARBUZ:500,START:250,MEGA:2500};
+if(!rewards[code]){$('msg').textContent='Nieprawidłowy kod!';return}
+if(used.includes(code)){$('msg').textContent='Kod już użyty!';return}
+used.push(code);s+=rewards[code];$('msg').textContent='🎉 Otrzymujesz '+rewards[code]+' arbuzów!';update()
+}
+setInterval(()=>{s+=autoPower();update()},1000);
+update();
+</script>
+</body>
+</html>
